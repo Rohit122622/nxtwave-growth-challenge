@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NxtWave Growth Challenge — 500 Registrations in 7 Days</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1e293b;
+    background-color: #f1f5f9;
+    font-size: 8.5pt;
+    line-height: 1.35;
+  }
+
+  .page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  .page {
+    width: 210mm;
+    height: 297mm;
+    background: #ffffff;
+    padding: 13mm 14mm 10mm 14mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    page-break-after: always;
+  }
+
+  @media print {
+    body {
+      background: none;
+    }
+    .page-container {
+      padding: 0;
+      gap: 0;
+    }
+    .page {
+      box-shadow: none;
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+    }
+  }
+
+  /* Header Styles */
+  .header {
+    border-bottom: 2px solid #0f172a;
+    padding-bottom: 6px;
+    margin-bottom: 7px;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .doc-title {
+    font-size: 15pt;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.3px;
+    line-height: 1.15;
+  }
+
+  .badge {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 7pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+
+  .meta-strip {
+    display: grid;
+    grid-template-columns: 1.3fr 0.8fr 0.8fr 0.8fr 1.3fr;
+    gap: 6px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: 7.2pt;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .meta-label {
+    color: #64748b;
+    font-size: 6.2pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .meta-val {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  /* Section Styles */
+  .section-title {
+    font-size: 9.5pt;
+    font-weight: 800;
+    color: #0f172a;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-left: 3px solid #2563eb;
+    padding-left: 6px;
+    margin-bottom: 5px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .section-title span.sub {
+    font-size: 7pt;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  /* Cards & Grids */
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 5px 7px;
+  }
+
+  .card.highlight {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+  }
+
+  .card-title {
+    font-size: 7.5pt;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 2px;
+  }
+
+  .card-desc {
+    font-size: 7pt;
+    color: #475569;
+    line-height: 1.25;
+  }
+
+  /* Tables */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.2pt;
+    margin-bottom: 3px;
+  }
+
+  table.data-table th {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    text-align: left;
+    padding: 3.5px 5px;
+    font-size: 6.8pt;
+    letter-spacing: 0.2px;
+  }
+
+  table.data-table td {
+    padding: 3.5px 5px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: top;
+    line-height: 1.25;
+  }
+
+  table.data-table tr:nth-child(even) td {
+    background: #f8fafc;
+  }
+
+  table.data-table tr.total-row td {
+    background: #eff6ff;
+    font-weight: 800;
+    color: #1e3a8a;
+    border-top: 1.5px solid #2563eb;
+    border-bottom: 1.5px solid #2563eb;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 6.2pt;
+    font-weight: 600;
+    font-family: monospace;
+  }
+
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-green { background: #dcfce7; color: #166534; }
+  .tag-amber { background: #fef3c7; color: #92400e; }
+
+  /* Budget Breakdown */
+  .budget-container {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 6px;
+    margin-top: 3px;
+  }
+
+  .budget-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 5px;
+    padding: 5px 7px;
+    background: #ffffff;
+  }
+
+  .budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 2px;
+    margin-bottom: 3px;
+  }
+
+  .budget-amount {
+    font-size: 9.5pt;
+    font-weight: 800;
+    color: #0f172a;
+  }
+
+  .budget-sub {
+    font-size: 6.8pt;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  /* Timeline Grid */
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 5px;
+  }
+
+  .timeline-col {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 4px 4px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .timeline-day {
+    background: #0f172a;
+    color: #ffffff;
+    font-size: 6.5pt;
+    font-weight: 800;
+    text-align: center;
+    padding: 1.5px 0;
+    border-radius: 2px;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+  }
+
+  .timeline-phase {
+    font-size: 6.6pt;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 2px;
+    line-height: 1.15;
+  }
+
+  .timeline-desc {
+    font-size: 6.1pt;
+    color: #475569;
+    line-height: 1.2;
+  }
+
+  /* Callout Banner */
+  .callout {
+    background: #f8fafc;
+    border-left: 3px solid #0f172a;
+    padding: 4px 8px;
+    font-size: 6.8pt;
+    color: #475569;
+    margin: 3px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  /* Experiments Box */
+  .exp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+  }
+
+  .exp-card {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 5px 6px;
+    background: #ffffff;
+    font-size: 6.8pt;
+  }
+
+  .exp-badge {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #334155;
+    font-weight: 700;
+    font-size: 6pt;
+    padding: 1px 4px;
+    border-radius: 2px;
+    margin-bottom: 2px;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid #cbd5e1;
+    padding-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 6.5pt;
+    color: #64748b;
+  }
+
+  .footer-left {
+    font-weight: 500;
+  }
+
+  .footer-right {
+    font-weight: 700;
+    color: #0f172a;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-container">
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="page">
+    <div>
+      <!-- Header -->
+      <header class="header">
+        <div class="header-top">
+          <div>
+            <h1 class="doc-title">NxtWave Growth Challenge — 500 Registrations in 7 Days</h1>
+            <div style="font-size: 7.6pt; color: #475569; font-weight: 500; margin-top: 1px;">
+              Campaign: <strong>“Build Your First AI Project in 60 Minutes”</strong> &nbsp;|&nbsp; Practical Growth Plan & Asset Architecture
+            </div>
+          </div>
+          <span class="badge">Page 1: Strategy & Acquisition</span>
+        </div>
+        <div class="meta-strip">
+          <div class="meta-item">
+            <span class="meta-label">Primary Target</span>
+            <span class="meta-val">500 Registrations</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Sprint Timeline</span>
+            <span class="meta-val">7 Days (Sprint)</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Budget Ceiling</span>
+            <span class="meta-val">₹2,000 (Max Cap)</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Target Audience</span>
+            <span class="meta-val">Final-Year Engineers</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Core Strategy</span>
+            <span class="meta-val">Permission Community + Referrals</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- 1. Executive Summary -->
+      <section>
+        <div class="section-title">
+          1. Executive Summary
+          <span class="sub">Strategic Mission & Operational Foundation</span>
+        </div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">Campaign Goal</div>
+            <div class="card-desc">
+              Attract, validate, and onboard <strong>500 final-year engineering students</strong> into a free online workshop in 7 days, maintaining zero tolerance for spam or fabricated metrics.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Budget Discipline</div>
+            <div class="card-desc">
+              Strict <strong>₹2,000 total ceiling</strong> prioritizing organic community distribution. Capital is allocated as an optional test and defensive reserve; unspent capital is preferred over wasteful spend.
+            </div>
+          </div>
+          <div class="card highlight">
+            <div class="card-title">Execution Paradigm</div>
+            <div class="card-desc">
+              Permission-first distribution through verified WhatsApp groups, Class Representatives, and student clubs, reinforced by an attribution-tracked peer referral engine.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Student Understanding & Hypotheses -->
+      <section>
+        <div class="section-title">
+          2. Student Understanding & Audience Hypotheses
+          <span class="sub">Hypotheses to Validate (Not Concluded Research Findings)</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 20%;">Audience Dimension</th>
+              <th style="width: 40%;">Working Behavioral Hypothesis</th>
+              <th style="width: 40%;">Strategic Countermeasure on Landing Page & Messaging</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primary Motivation</strong></td>
+              <td>Final-year engineers urgently need tangible technical projects to discuss during upcoming campus placements and off-campus recruitment rounds.</td>
+              <td>Positions a real, working project (<em>"AI Text Summarizer in ~45m"</em>) as the primary takeaway rather than theoretical slides or passive lectures.</td>
+            </tr>
+            <tr>
+              <td><strong>Friction: Difficulty</strong></td>
+              <td>Students fear AI requires advanced mathematics, neural network theory, or expensive GPU hardware setups they do not possess.</td>
+              <td>Clear prerequisite copy: <em>"No prior AI experience required. If you can write basic code in any language, you can build this."</em></td>
+            </tr>
+            <tr>
+              <td><strong>Friction: Time Commitment</strong></td>
+              <td>Students juggle semester projects, lab exams, and placement training; standard 3-hour webinars face severe registration and attendance drop-offs.</td>
+              <td>Explicit 60-minute timebox guarantee prominently highlighted in the hero headline, syllabus breakdown, and confirmation page.</td>
+            </tr>
+            <tr>
+              <td><strong>Friction: Upsell Skepticism</strong></td>
+              <td>Students are saturated with "free masterclasses" that disguise aggressive sales pitches for expensive certificate courses.</td>
+              <td>High-trust disclosure: 100% free, zero hidden fees, zero unsolicited WhatsApp spam, and open-source starter code provided upfront.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 3. Prioritized Acquisition Strategy -->
+      <section>
+        <div class="section-title">
+          3. Prioritized Acquisition Strategy
+          <span class="sub">Planning Hypothesis: Reconciled 500-Registration Target</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 26%;">Channel & Mechanism</th>
+              <th style="width: 8%; text-align: center;">Target</th>
+              <th style="width: 6%; text-align: center;">Share</th>
+              <th style="width: 24%;">Concrete Execution Action</th>
+              <th style="width: 18%;">Attribution & Tracking</th>
+              <th style="width: 18%;">Principal Risk & Governance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>College WhatsApp Groups</strong><br>
+                <span style="font-size: 6.2pt; color: #64748b;">Direct cohort broadcast</span>
+              </td>
+              <td style="text-align: center; font-weight: 700;">180</td>
+              <td style="text-align: center;">36%</td>
+              <td>Request permission from group admins; share forwardable value cards with project previews.</td>
+              <td><span class="tag tag-green">?utm_source=whatsapp</span> parameter parsed in backend.</td>
+              <td>Admin rejection or group broadcast fatigue. <em>Rule: Never post without admin approval.</em></td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Class Representatives (CRs)</strong><br>
+                <span style="font-size: 6.2pt; color: #64748b;">Peer authority endorsement</span>
+              </td>
+              <td style="text-align: center; font-weight: 700;">120</td>
+              <td style="text-align: center;">24%</td>
+              <td>1:1 outreach to 25 target college CRs; provide ready-to-relay departmental notice copy.</td>
+              <td><span class="tag tag-blue">?utm_source=classrep</span> with college-specific tags.</td>
+              <td>Delayed CR follow-through. Mitigated by sharing ready-made 1-tap forwardable messages.</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Tech Clubs & Coding Societies</strong><br>
+                <span style="font-size: 6.2pt; color: #64748b;">Pre-qualified tech enthusiasts</span>
+              </td>
+              <td style="text-align: center; font-weight: 700;">90</td>
+              <td style="text-align: center;">18%</td>
+              <td>Partner with college IEEE/ACM/GDSC leads to post in club Discord/WhatsApp channels.</td>
+              <td><span class="tag tag-blue">?utm_source=techclub</span> tracked in channel table.</td>
+              <td>Club governance approval cycles. Mitigated by highlighting purely non-commercial upskilling.</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Student Peer Referrals</strong><br>
+                <span style="font-size: 6.2pt; color: #64748b;">K-factor viral multiplier</span>
+              </td>
+              <td style="text-align: center; font-weight: 700;">70</td>
+              <td style="text-align: center;">14%</td>
+              <td>Generate unique referral code on registration; encourage inviting project study partners.</td>
+              <td><span class="tag tag-amber">?ref=CODE</span> mapped to referrer's ID in SQLite.</td>
+              <td>Self-referral gaming. Mitigated by server-side email matching and unique deduplication.</td>
+            </tr>
+            <tr>
+              <td>
+                <strong>Organic Technical Posts</strong><br>
+                <span style="font-size: 6.2pt; color: #64748b;">Intent-driven search & social</span>
+              </td>
+              <td style="text-align: center; font-weight: 700;">40</td>
+              <td style="text-align: center;">8%</td>
+              <td>Educational post: <em>"How to call your first LLM API in Python"</em> with registration link.</td>
+              <td><span class="tag tag-blue">?utm_source=organic</span> logged on landing page.</td>
+              <td>Platform algorithmic decay. Treated as an auxiliary channel with zero budget dependency.</td>
+            </tr>
+            <tr class="total-row">
+              <td><strong>Total Planned Hypothesis</strong></td>
+              <td style="text-align: center;">500</td>
+              <td style="text-align: center;">100%</td>
+              <td colspan="3"><strong>Reconciled Sum: 180 + 120 + 90 + 70 + 40 = 500 registrations</strong> across 5 distinct channels.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 4. Budget Allocation -->
+      <section>
+        <div class="section-title">
+          4. Budget Allocation Plan (Strict ₹2,000 Total Ceiling)
+          <span class="sub">Planned Expenditure Hypotheses (Not Incurred Expenses)</span>
+        </div>
+        <div class="budget-container">
+          <div class="budget-card">
+            <div class="budget-header">
+              <span class="budget-amount">₹1,000</span>
+              <span class="budget-sub">50% | Optional Paid Test</span>
+            </div>
+            <div class="card-desc">
+              <strong>Micro-Paid Pilot:</strong> Highly targeted Meta/Campus pilot (only deployed if an approved, measurable paid channel exists and organic Day 3 conversion confirms CAC &le; ₹15).
+            </div>
+          </div>
+          <div class="budget-card">
+            <div class="budget-header">
+              <span class="budget-amount">₹500</span>
+              <span class="budget-sub">25% | Creative Assets</span>
+            </div>
+            <div class="card-desc">
+              <strong>Asset Contingency:</strong> Formatted forwardable flyer cards, project architectural diagrams, and mobile-optimized visual collateral for community distribution.
+            </div>
+          </div>
+          <div class="budget-card">
+            <div class="budget-header">
+              <span class="budget-amount">₹500</span>
+              <span class="budget-sub">25% | Defensive Reserve</span>
+            </div>
+            <div class="card-desc">
+              <strong>Defensive Buffer:</strong> Strictly unallocated reserve. Deployed only to double down on the top-performing permitted organic channel; otherwise retained unspent.
+            </div>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Capital Efficiency Principle:</strong> Organic community distribution is prioritized. ₹2,000 is an operational ceiling, not a spending mandate. Retaining unspent capital is superior to unmeasured, low-intent paid customer acquisition.
+        </div>
+      </section>
+    </div>
+
+    <!-- Page 1 Footer -->
+    <footer class="footer">
+      <div class="footer-left">NxtWave Growth Challenge — Proposed Operational Strategy & Working Asset Specification</div>
+      <div class="footer-right">Page 1 of 2</div>
+    </footer>
+  </div>
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="page">
+    <div>
+      <!-- Header -->
+      <header class="header">
+        <div class="header-top">
+          <div>
+            <h1 class="doc-title">NxtWave Growth Challenge — Execution & Working Asset</h1>
+            <div style="font-size: 7.6pt; color: #475569; font-weight: 500; margin-top: 1px;">
+              Operational Roadmap, Telemetry Architecture, Risk Governance, and Pre-Registered Experimentation
+            </div>
+          </div>
+          <span class="badge">Page 2: Execution & Working Asset</span>
+        </div>
+      </header>
+
+      <!-- 5. Seven-Day Execution Calendar -->
+      <section>
+        <div class="section-title">
+          5. Seven-Day Operational Execution Calendar
+          <span class="sub">Sequential Tactical Sprint</span>
+        </div>
+        <div class="timeline-grid">
+          <div class="timeline-col">
+            <div class="timeline-day">Day 1</div>
+            <div class="timeline-phase">Asset Finalization</div>
+            <div class="timeline-desc">Launch landing page, SQLite schema, UTM logging, referral engine. Prepare permission request copy.</div>
+          </div>
+          <div class="timeline-col">
+            <div class="timeline-day">Day 2</div>
+            <div class="timeline-phase">Campus Directory</div>
+            <div class="timeline-desc">Map 25 target colleges; contact Class Representatives & Club Leads; secure explicit posting permission.</div>
+          </div>
+          <div class="timeline-col">
+            <div class="timeline-day">Day 3</div>
+            <div class="timeline-phase">Approved Launch</div>
+            <div class="timeline-desc">Deploy tracked links across permitted WhatsApp groups. Monitor real-time server health & rate limits.</div>
+          </div>
+          <div class="timeline-col">
+            <div class="timeline-day">Day 4</div>
+            <div class="timeline-phase">Velocity Audit</div>
+            <div class="timeline-desc">Audit channel acquisition against targets in Growth Dashboard; refine messaging for lagging college cohorts.</div>
+          </div>
+          <div class="timeline-col">
+            <div class="timeline-day">Day 5</div>
+            <div class="timeline-phase">Referral Push</div>
+            <div class="timeline-desc">Trigger referral prompt to registered students; showcase project preview (Text Summarizer architecture).</div>
+          </div>
+          <div class="timeline-col">
+            <div class="timeline-day">Day 6</div>
+            <div class="timeline-phase">Objection Clearing</div>
+            <div class="timeline-desc">Deploy permitted reminder clarifying zero AI prerequisites and 60-min timebox; resolve student queries.</div>
+          </div>
+          <div class="timeline-col">
+            <div class="timeline-day">Day 7</div>
+            <div class="timeline-phase">Final Operations</div>
+            <div class="timeline-desc">Final 6-hour permitted reminder; close intake; export sanitized CSV ledger for attendee onboarding.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. Measurement Framework & Decision Governance -->
+      <section>
+        <div class="section-title">
+          6. Measurement Framework & Decision Governance
+          <span class="sub">Truthful Denominators & Daily Reallocation Protocol</span>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Telemetry & Guardrail Metrics</div>
+            <div class="card-desc">
+              &bull; <strong>Primary KPI:</strong> Verified registrations stored in SQLite against the 500-seat ceiling.<br>
+              &bull; <strong>Channel Contribution:</strong> Tracked via <code>bySource</code> aggregation against planned quotas.<br>
+              &bull; <strong>Conversion Rate (CR%):</strong> Calculated <em>strictly when valid visit impression denominators exist</em>.<br>
+              &bull; <strong>Cost Per Acquisition (CAC):</strong> Calculated <em>strictly against actual disbursed ad spend</em>.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Daily Reallocation Protocol</div>
+            <div class="card-desc">
+              &bull; <strong>Daily 18:00 IST Audit:</strong> Compare channel registration run-rates against the ~72/day baseline.<br>
+              &bull; <strong>Underperformance Rule:</strong> If a channel is &gt;30% below pace by Day 4, outreach effort is reallocated to high-converting CRs.<br>
+              &bull; <strong>Zero Fabricated Metrics:</strong> No decorative counters or arbitrary multipliers.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. Working Asset: Growth Prototype Specification -->
+      <section>
+        <div class="section-title">
+          7. Working Asset: Growth Prototype Specification
+          <span class="sub">Fully Operational Local Web Application Supporting Strategy</span>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 25%;">Prototype Module</th>
+              <th style="width: 45%;">Verified Technical Implementation</th>
+              <th style="width: 30%;">Strategic Growth Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Landing Page (<code>/</code>)</strong></td>
+              <td>Tailwind v4 responsive interface; clear 60-min outcome; project blueprint; FAQ; ethical prototype disclosure.</td>
+              <td>High-converting, low-friction acquisition gateway eliminating student skepticism.</td>
+            </tr>
+            <tr>
+              <td><strong>Registration Engine (<code>/register</code>)</strong></td>
+              <td>React Hook Form + Zod validation; SQLite normalized email deduplication; UTM & referral parsing.</td>
+              <td>Guarantees data cleanliness and prevents duplicate or automated spam submissions.</td>
+            </tr>
+            <tr>
+              <td><strong>Referral Hub (<code>/success</code>)</strong></td>
+              <td>Generates unique Registration ID (<code>WS-XXXXXX</code>) and readable referral code with 1-click clipboard link builder.</td>
+              <td>Powers the 70-registration viral loop target through friction-free peer sharing.</td>
+            </tr>
+            <tr>
+              <td><strong>Growth Dashboard (<code>/dashboard</code>)</strong></td>
+              <td>Live KPI cards, 500-target progress bar, Recharts velocity & channel graphs, editable channel targets, safe CSV export.</td>
+              <td>Provides executive visibility, attribution tracking, and operations handoff.</td>
+            </tr>
+            <tr>
+              <td><strong>Data Mode Separation</strong></td>
+              <td>Explicit toggle separating genuine local registrations (<code>is_demo = 0</code>) from synthetic records (<code>is_demo = 1</code>).</td>
+              <td>Guarantees demonstration transparency; demo data never pollutes live records.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout" style="margin-top: 2px;">
+          <strong>Asset Disclosure:</strong> The working prototype is an operational measurement and workflow tool built to support this challenge. It demonstrates technical readiness; it is not proof that 500 live registrations currently exist.
+        </div>
+      </section>
+
+      <!-- 8. Strategic Risks and Mitigations -->
+      <section>
+        <div class="section-title">
+          8. Strategic Risks and Mitigations
+          <span class="sub">Defensive Risk Management</span>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Limited Organic Reach & Admin Gatekeeping</div>
+            <div class="card-desc">
+              <em>Risk:</em> WhatsApp group admins refuse promotional posts.<br>
+              <em>Mitigation:</em> Pitch as non-commercial academic upskilling; provide co-branding recognition for participating student coding clubs.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Attribution Leakage & Direct Drift</div>
+            <div class="card-desc">
+              <em>Risk:</em> Students strip UTM tags when forwarding links.<br>
+              <em>Mitigation:</em> Pre-shorten links with baked-in parameters; utilize unique student referral codes as a persistent secondary attribution layer.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Landing Page Form Abandonment</div>
+            <div class="card-desc">
+              <em>Risk:</em> Visitors bounce when encountering long registration fields.<br>
+              <em>Mitigation:</em> Constrain form strictly to 5 essential academic fields; provide immediate visual confirmation without email verification barriers.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Spreadsheet Formula Injection Vulnerability</div>
+            <div class="card-desc">
+              <em>Risk:</em> Malicious student input executes DDE commands in Excel exports.<br>
+              <em>Mitigation:</em> Automatic sanitization prefixing formula triggers (<code>=, +, -, @</code>) with single quotes in the CSV export engine.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. Pre-Registered Growth Experiments -->
+      <section>
+        <div class="section-title">
+          9. Pre-Registered Growth Experiments
+          <span class="sub">Planned Methodological Tests (Not Claimed as Completed)</span>
+        </div>
+        <div class="exp-grid">
+          <div class="exp-card">
+            <span class="exp-badge">EXP-01: Headline Framing</span>
+            <div style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">Project Outcome vs. Abstract Skill</div>
+            <div><strong>Hypothesis:</strong> "Build an AI App in 60m" converts higher than "Learn AI Fundamentals" due to placement portfolio demand.</div>
+            <div style="margin-top: 2px;"><strong>Metric:</strong> Landing Page CR% (min. 150 visits/variant).</div>
+            <div style="color: #1e40af; font-weight: 600; margin-top: 1px;">Decision: Adopt if outcome variant &ge; 15% lift (p &lt; 0.05).</div>
+          </div>
+          <div class="exp-card">
+            <span class="exp-badge">EXP-02: Message Format</span>
+            <div style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">Finished Preview vs. Syllabus Bullets</div>
+            <div><strong>Hypothesis:</strong> Visual card showing the finished Text Summarizer drives higher CTR in class groups than text-heavy syllabus points.</div>
+            <div style="margin-top: 2px;"><strong>Metric:</strong> Tracked UTM link CTR & completed registrations.</div>
+            <div style="color: #1e40af; font-weight: 600; margin-top: 1px;">Decision: Standardize if visual card &ge; 25% lift across 10 groups.</div>
+          </div>
+          <div class="exp-card">
+            <span class="exp-badge">EXP-03: Referral Incentive</span>
+            <div style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">Study Partner vs. Generic Share</div>
+            <div><strong>Hypothesis:</strong> "Invite a Project Partner to Build Together" yields higher viral factor than generic "Invite Friends".</div>
+            <div style="margin-top: 2px;"><strong>Metric:</strong> Referral coefficient (k-factor = referral regs / initial regs).</div>
+            <div style="color: #1e40af; font-weight: 600; margin-top: 1px;">Decision: Prioritize referral modal if k &gt; 0.20 on Day 5.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Page 2 Footer -->
+    <footer class="footer">
+      <div class="footer-left">NxtWave Growth Challenge — Proposed Operational Strategy & Working Asset Specification</div>
+      <div class="footer-right">Page 2 of 2</div>
+    </footer>
+  </div>
+
+</div>
+
+</body>
+</html>
