@@ -245,8 +245,10 @@ Because Render Free tier does not include interactive shell access, the server i
    *Optional overrides:*
    | Variable | Default | Description |
    |---|---|---|
+   | `TRUST_PROXY` | `1` | Trusted reverse proxy hops (1 hop for Render). Scopes client IP resolution and prevents IP spoofing |
    | `CORS_ORIGINS` | *(automatic)* | Automatically permits same-origin requests and `*.onrender.com` |
-   | `RATE_LIMIT_MAX_REQUESTS` | `150` | Maximum requests per 15-minute window |
+   | `RATE_LIMIT_MAX_REQUESTS` | `150` | Maximum general API requests per 15-minute window |
+   | `AUTH_RATE_LIMIT_MAX` | `15` | Maximum failed auth attempts before 15-minute lockout (brute-force protection) |
    | `REGISTRATION_RATE_LIMIT_MAX` | `10` | Maximum registration attempts per 15-minute window |
 
 4. **Deploy & Verify:**

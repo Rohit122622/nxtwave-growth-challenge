@@ -34,6 +34,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust immediate reverse proxy (Render: 1 hop) before any middleware or rate limiters
+// Narrowly scoped to 1 hop to prevent IP spoofing while correctly identifying client IPs
+const parseTrustProxy = () => {
+  const envVal = process.env.TRUST_PROXY;
+  if (!envVal) return 1; // Default to 1 hop for Render / reverse proxy
+  if (envVal === 'false') return false;
+  if (envVal === 'true') return 1;
+  const num = parseInt(envVal, 10);
+  return isNaN(num) ? envVal : num;
+};
+
+app.set('trust proxy', parseTrustProxy());
+
 // Middleware
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cookieParser());
@@ -68,16 +81,17 @@ app.use(cors({
 
 // Rate Limiters
 const generalLimiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '150'),
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10),
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '150', 10),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many requests. Please try again later.' },
 });
 
 const authLimiter = rateLimit({
-  windowMs: 900000, // 15 minutes
-  max: 15,
+  windowMs: parseInt(process.env.AUTH_RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
+  max: parseInt(process.env.AUTH_RATE_LIMIT_MAX || '15', 10),
+  skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many authentication attempts. Please try again later.' },
@@ -85,7 +99,7 @@ const authLimiter = rateLimit({
 
 const registrationLimiter = rateLimit({
   windowMs: 900000,
-  max: parseInt(process.env.REGISTRATION_RATE_LIMIT_MAX || '10'),
+  max: parseInt(process.env.REGISTRATION_RATE_LIMIT_MAX || '10', 10),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many registration attempts. Please try again later.' },
@@ -1185,6 +1199,11 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'An unexpected error occurred.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
-});
+let server;
+if (process.env.NODE_ENV !== 'test') {
+  server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
+  });
+}
+
+export { app, server };
