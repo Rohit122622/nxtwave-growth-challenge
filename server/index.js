@@ -24,6 +24,7 @@ import {
   verifyAccountToken,
   consumeAccountToken,
   generateSecureToken,
+  bootstrapInitialAdmin,
   AUTH_COOKIE_NAME,
   CSRF_COOKIE_NAME,
 } from './auth.js';
@@ -42,13 +43,25 @@ const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:5173').spl
 const isProduction = process.env.NODE_ENV === 'production';
 app.use(cors({
   origin: (origin, callback) => {
-    // In production with same-origin serving, allow requests with no origin header
-    // (same-origin requests, server-side requests). Also allow configured origins.
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
+    // 1. Same-origin or non-browser requests (no origin header)
+    if (!origin) return callback(null, true);
+
+    // 2. Explicitly allowed origins from CORS_ORIGINS
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    // 3. In production, also allow Render subdomains (*.onrender.com) and localhost
+    if (isProduction) {
+      try {
+        const parsed = new URL(origin);
+        if (parsed.hostname.endsWith('.onrender.com') || parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+          return callback(null, true);
+        }
+      } catch {
+        // Invalid origin format, fall through to rejection
+      }
     }
+
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
@@ -86,10 +99,16 @@ app.use(authenticate);
 // CSRF validation on mutating actions
 app.use('/api/', validateCsrf);
 
-// Initialize DB schema
+// Initialize DB schema & provision initial admin account if configured and absent
 const dbInit = getDb();
-initializeDb(dbInit);
-dbInit.close();
+try {
+  initializeDb(dbInit);
+  await bootstrapInitialAdmin(dbInit);
+} catch (err) {
+  console.error('[Startup DB Error]:', err.message);
+} finally {
+  dbInit.close();
+}
 
 // ========== CSRF TOKEN ENDPOINT ==========
 

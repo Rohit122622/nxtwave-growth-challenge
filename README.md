@@ -182,61 +182,88 @@ node server/scripts/bootstrap-admin.js admin@example.com YourStrongPassword1
 
 ---
 
-## 7. Deploying to Render
+## 7. Deploying to Render (Free Tier)
 
-### Architecture
+### Architecture Overview
 
-In production, the Express server serves both the API (`/api/*`) and the built React frontend (static files from `dist/`). All non-API GET requests fall back to `index.html` for client-side routing (React Router).
+In production on Render, a single Node.js process runs the application:
+1. **Express Server:** Listens on the dynamic port supplied by Render (`process.env.PORT`) and handles all `/api/*` REST endpoints.
+2. **React 19 Frontend:** Statically served from `dist/` (built during `npm run build`), with automatic SPA fallback (`/^\/(?!api\/).*/`) so direct navigation to deep links (such as `/register`, `/login`, `/admin/login`, `/dashboard`, and `/student/dashboard`) works seamlessly.
+3. **SQLite Database:** Runs via `better-sqlite3` targeting `/tmp/workshop.db`.
 
-### ⚠️ SQLite Persistence Warning
+---
 
-Render's default filesystem is **ephemeral** — data written to disk is lost on every deploy or restart. To persist the SQLite database, you **must** attach a Render Persistent Disk.
+### ⚠️ Render Free Ephemeral Storage Notice
 
-### Step-by-Step Render Setup
+> **Important:** Render Free tier web services run in **ephemeral containers** that spin down after 15 minutes of inactivity and rebuild on each deploy.
+> 
+> - The database file at `DB_PATH=/tmp/workshop.db` is temporary. Data is preserved across HTTP requests while the instance is awake, but will reset if the container is restarted, redeployed, or spins down from inactivity.
+> - This setup is 100% free with **zero paid add-ons**.
+> - For long-term production persistence, you can later attach a Render Persistent Disk (requires paid plan) or migrate to a cloud-managed database like Turso (libSQL/SQLite) or PostgreSQL.
 
-1. **Create a Web Service** in the Render Dashboard:
-   - **Repository:** Connect your GitHub/GitLab repo
+---
+
+### Automatic Secure Admin Bootstrap on Startup
+
+Because Render Free tier does not include interactive shell access, the server includes a secure **automatic bootstrap** on startup:
+- On container spin-up (or after an ephemeral storage wipe), the server initializes all database tables (`users`, `registrations`, `sessions`, `campaign_config`, etc.).
+- It checks if any administrator account exists (`SELECT id FROM users WHERE role = 'admin'`).
+- **If and only if no admin account exists**, it provisions the initial admin using `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` defined in your Render Environment Variables.
+- **Safety Guarantees:**
+  - Existing admin passwords are **never overwritten** on restart.
+  - Plaintext passwords and secret hashes are **never printed or logged**.
+  - No public admin-creation API endpoint is exposed.
+  - Full CSRF token protection and rate limiting remain strictly enforced.
+
+---
+
+### Step-by-Step Render Free Setup
+
+1. **Create a Free Web Service:**
+   - Sign in to [dashboard.render.com](https://dashboard.render.com).
+   - Click **New +** → **Web Service**.
+   - Connect your GitHub repository.
+   - Choose the **Free** instance type ($0/mo).
+
+2. **Configure Service Settings:**
+   - **Name:** `nxtwave-growth-challenge` (or your preferred name)
    - **Environment:** `Node`
+   - **Branch:** `main`
    - **Build Command:** `npm install && npm run build`
    - **Start Command:** `npm start`
 
-2. **Set Environment Variables** in the Render service settings:
+3. **Configure Environment Variables:**
+   Under the **Environment** tab, add the following variables:
 
-   | Variable | Value | Notes |
+   | Variable | Value | Description |
    |---|---|---|
-   | `NODE_ENV` | `production` | Required for secure cookies, static serving |
-   | `DB_PATH` | `/var/data/workshop.db` | Must match the Persistent Disk mount path |
-   | `INITIAL_ADMIN_EMAIL` | `your-admin@yourdomain.com` | For initial admin bootstrap |
-   | `INITIAL_ADMIN_PASSWORD` | *(strong unique password)* | Min 8 chars, letters + numbers |
+   | `NODE_ENV` | `production` | Enables production mode, secure cookies, and static serving |
+   | `DB_PATH` | `/tmp/workshop.db` | Writable temporary SQLite database path in Render's container |
+   | `INITIAL_ADMIN_EMAIL` | `admin@example.com` *(use your email)* | Email for initial administrator account |
+   | `INITIAL_ADMIN_PASSWORD` | *(your strong password, min 8 chars with letters & numbers)* | Secure admin password |
 
-   Optional overrides:
-   | Variable | Default | Notes |
+   *Optional overrides:*
+   | Variable | Default | Description |
    |---|---|---|
-   | `PORT` | (set by Render automatically) | Do not set manually |
-   | `CORS_ORIGINS` | *(empty = same-origin)* | Only needed if frontend is on a different domain |
-   | `RATE_LIMIT_MAX_REQUESTS` | `150` | Adjust for production traffic |
+   | `CORS_ORIGINS` | *(automatic)* | Automatically permits same-origin requests and `*.onrender.com` |
+   | `RATE_LIMIT_MAX_REQUESTS` | `150` | Maximum requests per 15-minute window |
+   | `REGISTRATION_RATE_LIMIT_MAX` | `10` | Maximum registration attempts per 15-minute window |
 
-3. **Attach a Persistent Disk:**
-   - Go to your Render service → **Disks** → **Add Disk**
-   - **Mount Path:** `/var/data`
-   - **Size:** 1 GB (sufficient for SQLite)
-   - This ensures `DB_PATH=/var/data/workshop.db` survives restarts and deploys.
+4. **Deploy & Verify:**
+   - Click **Create Web Service**. Render will run the build and launch your service.
+   - Once the deploy status turns green (**Live**):
+     - **Health check:** Open `https://your-service.onrender.com/api/health` → returns `{"status":"ok",...}`.
+     - **Landing page:** Open `https://your-service.onrender.com/` → workshop registration page loads.
+     - **Deep links:** Test opening `https://your-service.onrender.com/login` and `https://your-service.onrender.com/admin/login` directly to verify client-side routing.
+     - **Admin dashboard:** Log in at `/admin/login` using your configured credentials to access `/dashboard`.
 
-4. **Bootstrap the Admin Account** (first deploy only):
-   - After the first deploy succeeds, open the **Shell** tab in Render:
-     ```bash
-     node server/scripts/bootstrap-admin.js
-     ```
-   - This reads `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` from the environment.
+---
 
-5. **Verify the deployment:**
-   - Visit `https://your-service.onrender.com/api/health` — should return `{"status":"ok",...}`
-   - Visit `https://your-service.onrender.com/` — the React landing page should load
-   - Visit `https://your-service.onrender.com/login` — should show the student login page (not a 404)
-   - Visit `https://your-service.onrender.com/admin/login` — should show the admin login page
-   - Log in as admin and verify the dashboard loads at `/dashboard`
+### Data Mode & Synthetic Data Separation
 
-### Alternative: Persistent Database Options
+- Live registrations (`is_demo = 0`) and synthetic demonstration records (`is_demo = 1`) are strictly isolated.
+- The server **never** seeds synthetic registrations automatically into live data on startup.
+- You can toggle between Live and Demo datasets directly inside the Admin Dashboard, or use the **Seed Demo Data** button to populate 45 sample records for demonstration purposes at any time.
 
 If you prefer not to use a Persistent Disk, consider migrating to a cloud-hosted database:
 - **Turso** (libSQL, SQLite-compatible, free tier available)

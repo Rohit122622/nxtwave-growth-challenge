@@ -251,3 +251,49 @@ export function consumeAccountToken(db, rawToken) {
     WHERE token_hash = ?
   `).run(tokenHash);
 }
+
+// Bootstrap initial admin account if and only if no admin account exists in database
+export async function bootstrapInitialAdmin(
+  db,
+  email = process.env.INITIAL_ADMIN_EMAIL,
+  password = process.env.INITIAL_ADMIN_PASSWORD
+) {
+  if (!email || !password) {
+    return { initialized: false, reason: 'NO_CREDENTIALS' };
+  }
+
+  const emailNormalized = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNormalized)) {
+    console.warn('[Admin Bootstrap] INITIAL_ADMIN_EMAIL is not a valid email address. Skipping admin provisioning.');
+    return { initialized: false, reason: 'INVALID_EMAIL' };
+  }
+
+  if (password.length < 8 || !/\d/.test(password)) {
+    console.warn('[Admin Bootstrap] INITIAL_ADMIN_PASSWORD must be at least 8 characters and contain at least one number. Skipping admin provisioning.');
+    return { initialized: false, reason: 'WEAK_PASSWORD' };
+  }
+
+  // Check if ANY admin already exists in the users table
+  const existingAdmin = db.prepare('SELECT id, email_normalized FROM users WHERE role = ?').get('admin');
+  if (existingAdmin) {
+    // CRITICAL SECURITY RULE: Never overwrite an existing admin password on restart
+    return { initialized: false, reason: 'ADMIN_EXISTS' };
+  }
+
+  // Check if a non-admin user already has this email
+  const existingUser = db.prepare('SELECT id, role FROM users WHERE email_normalized = ?').get(emailNormalized);
+  if (existingUser) {
+    console.warn(`[Admin Bootstrap] Account with email ${emailNormalized} already exists with role ${existingUser.role}. Skipping admin provisioning.`);
+    return { initialized: false, reason: 'USER_EXISTS' };
+  }
+
+  const passwordHash = await hashPassword(password);
+  db.prepare(`
+    INSERT INTO users (full_name, email, email_normalized, password_hash, role, status)
+    VALUES (?, ?, ?, ?, 'admin', 'active')
+  `).run('System Administrator', email.trim(), emailNormalized, passwordHash);
+
+  // Never log the password or secret tokens
+  console.log(`[Admin Bootstrap] Initial admin account provisioned successfully (${emailNormalized}).`);
+  return { initialized: true, email: emailNormalized };
+}

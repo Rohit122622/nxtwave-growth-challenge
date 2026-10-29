@@ -13,6 +13,7 @@ import {
   createAccountToken,
   verifyAccountToken,
   consumeAccountToken,
+  bootstrapInitialAdmin,
 } from '../server/auth.js';
 import { seedDemoData, clearDemoData } from '../server/seed.js';
 
@@ -338,5 +339,80 @@ describe('NxtWave Growth Challenge — Comprehensive Authentication & Security S
 
     const expiredCheck = verifyAccountToken(db, expiredToken, 'claim');
     expect(expiredCheck).toBeNull();
+  });
+
+  // 19. Startup Admin Auto-Bootstrap on Fresh Database
+  it('19. Startup admin auto-bootstrap provisions initial admin only when no admin exists', async () => {
+    const freshDbPath = './data/test_fresh_bootstrap.db';
+    if (fs.existsSync(freshDbPath)) fs.unlinkSync(freshDbPath);
+    const freshDb = new Database(freshDbPath);
+    initializeDb(freshDb);
+
+    // Verify initially no admin exists
+    const beforeAdmin = freshDb.prepare('SELECT id FROM users WHERE role = ?').get('admin');
+    expect(beforeAdmin).toBeUndefined();
+
+    // Run auto-bootstrap with valid env values
+    const res = await bootstrapInitialAdmin(freshDb, 'fresh-admin@nxtwave.lan', 'FreshAdminPass2026!');
+    expect(res.initialized).toBe(true);
+    expect(res.email).toBe('fresh-admin@nxtwave.lan');
+
+    // Admin now exists in database with valid bcrypt hash
+    const adminUser = freshDb.prepare('SELECT * FROM users WHERE email_normalized = ? AND role = ?').get('fresh-admin@nxtwave.lan', 'admin');
+    expect(adminUser).toBeDefined();
+    expect(adminUser.role).toBe('admin');
+    expect(await comparePassword('FreshAdminPass2026!', adminUser.password_hash)).toBe(true);
+
+    freshDb.close();
+    if (fs.existsSync(freshDbPath)) fs.unlinkSync(freshDbPath);
+  });
+
+  // 20. Never Overwrite Existing Admin Password on Restart
+  it('20. Startup admin auto-bootstrap never overwrites an existing admin password on restart', async () => {
+    // Current test db already has an admin ('growth-admin@nxtwave.lan')
+    const existingAdmin = db.prepare('SELECT * FROM users WHERE role = ?').get('admin');
+    expect(existingAdmin).toBeDefined();
+    const originalHash = existingAdmin.password_hash;
+
+    // Simulate server restart calling auto-bootstrap with a different password
+    const restartResult = await bootstrapInitialAdmin(db, 'attacker-admin@nxtwave.lan', 'NewAttackerPass123!');
+    expect(restartResult.initialized).toBe(false);
+    expect(restartResult.reason).toBe('ADMIN_EXISTS');
+
+    // Original admin is preserved untouched
+    const afterRestart = db.prepare('SELECT * FROM users WHERE id = ?').get(existingAdmin.id);
+    expect(afterRestart.email_normalized).toBe(existingAdmin.email_normalized);
+    expect(afterRestart.password_hash).toBe(originalHash);
+  });
+
+  // 21. Rejects Weak Passwords or Invalid Emails during Startup Provisioning
+  it('21. Startup admin auto-bootstrap safely rejects weak passwords or invalid emails without crashing', async () => {
+    const freshDbPath = './data/test_invalid_bootstrap.db';
+    if (fs.existsSync(freshDbPath)) fs.unlinkSync(freshDbPath);
+    const freshDb = new Database(freshDbPath);
+    initializeDb(freshDb);
+
+    // Invalid email format
+    const badEmailRes = await bootstrapInitialAdmin(freshDb, 'not-an-email', 'ValidPass123!');
+    expect(badEmailRes.initialized).toBe(false);
+    expect(badEmailRes.reason).toBe('INVALID_EMAIL');
+
+    // Weak password (< 8 chars)
+    const shortPassRes = await bootstrapInitialAdmin(freshDb, 'admin@example.com', 'short1');
+    expect(shortPassRes.initialized).toBe(false);
+    expect(shortPassRes.reason).toBe('WEAK_PASSWORD');
+
+    // Password with no digits
+    const noDigitRes = await bootstrapInitialAdmin(freshDb, 'admin@example.com', 'allletterslong');
+    expect(noDigitRes.initialized).toBe(false);
+    expect(noDigitRes.reason).toBe('WEAK_PASSWORD');
+
+    // Missing credentials
+    const noCredsRes = await bootstrapInitialAdmin(freshDb, null, null);
+    expect(noCredsRes.initialized).toBe(false);
+    expect(noCredsRes.reason).toBe('NO_CREDENTIALS');
+
+    freshDb.close();
+    if (fs.existsSync(freshDbPath)) fs.unlinkSync(freshDbPath);
   });
 });

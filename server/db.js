@@ -3,7 +3,9 @@ import path from 'path';
 import fs from 'fs';
 
 export function getDb() {
-  const dbPath = process.env.DB_PATH || './data/workshop.db';
+  // On Render Free (ephemeral container), default to /tmp/workshop.db if DB_PATH is not set
+  const defaultPath = process.env.RENDER ? '/tmp/workshop.db' : './data/workshop.db';
+  const dbPath = process.env.DB_PATH || defaultPath;
   const dir = path.dirname(dbPath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
